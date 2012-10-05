@@ -3,7 +3,7 @@ require 'test_helper'
 class Person
   include ActiveModel::MassAssignmentSecurity
   include ActiveModel::ForbiddenAttributesProtection
-  
+
   public :sanitize_for_mass_assignment
 end
 
@@ -20,11 +20,25 @@ class ActiveModelMassUpdateProtectionTest < ActiveSupport::TestCase
         Person.new.sanitize_for_mass_assignment(ActionController::Parameters.new(a: "b").permit(:a)))
     end
   end
-  
+
   test "regular attributes should still be allowed" do
     assert_nothing_raised do
       assert_equal({ a: "b" },
         Person.new.sanitize_for_mass_assignment(a: "b"))
+    end
+  end
+
+  test "regular methods should be allowed with attr_accessible set to nil" do
+    Person.attr_accessible(nil)
+
+    assert_nothing_raised do
+      assert_equal({},
+        Person.new.sanitize_for_mass_assignment(a: "b"))
+    end
+
+    assert_nothing_raised do
+      assert_equal({ "a" => "b" },
+                   Person.new.sanitize_for_mass_assignment(ActionController::Parameters.new(a: "b").permit(:a)))
     end
   end
 end
